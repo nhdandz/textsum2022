@@ -7,8 +7,15 @@ import json
 import requests
 import logging
 import traceback
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 logging.basicConfig(level=logging.INFO)
+
+# Token estimation constants
+CHARS_PER_TOKEN_VI = 4  # Vietnamese text: ~4 chars per token
+MAX_TOKENS = 30000  # Safety margin for 33k context window (conservative for better quality)
+MAX_CHARS = MAX_TOKENS * CHARS_PER_TOKEN_VI
+MAX_WORKERS = 3  # Number of parallel workers for chunking (adjust based on GPU/CPU capacity)
 
 class TestRebalanceListener(ConsumerRebalanceListener):
     def __init__(self, consumer: KafkaConsumer, error_partition: TopicPartition, error_offset: int):
@@ -29,8 +36,71 @@ class TestRebalanceListener(ConsumerRebalanceListener):
                 self.consumer.seek(partition, current_offset)
 
 
-def call_ollama_summary(text: str, percent: float, ollama_url: str, model: str = "mistral") -> str:
-    """Call Ollama API for text summarization"""
+def estimate_token_count(text: str) -> int:
+    """Estimate token count for Vietnamese text"""
+    return len(text) // CHARS_PER_TOKEN_VI
+
+
+def chunk_text_by_tokens(text: str, max_tokens: int = MAX_TOKENS) -> list:
+    """
+    Chia văn bản thành các chunks dựa trên paragraph (đoạn văn)
+    Mỗi chunk chứa nhiều đoạn văn nhưng không vượt quá max_tokens
+    """
+    # Chia theo paragraph: dựa vào dấu xuống dòng kép hoặc xuống dòng đơn
+    paragraphs = []
+
+    # Thử chia theo dấu xuống dòng kép trước
+    temp_paragraphs = text.split('\n\n')
+
+    # Nếu không có xuống dòng kép, chia theo xuống dòng đơn
+    if len(temp_paragraphs) == 1:
+        temp_paragraphs = text.split('\n')
+
+    # Loại bỏ các đoạn rỗng và strip whitespace
+    for para in temp_paragraphs:
+        para = para.strip()
+        if para:
+            paragraphs.append(para)
+
+    # Nếu không có paragraph nào (văn bản liền khối), fallback về sentence-based
+    if len(paragraphs) <= 1:
+        import nltk
+        try:
+            nltk.data.find('tokenizers/punkt')
+        except LookupError:
+            nltk.download('punkt', quiet=True)
+        sentences = nltk.sent_tokenize(text)
+        paragraphs = sentences
+
+    # Group paragraphs vào chunks
+    chunks = []
+    current_chunk = []
+    current_length = 0
+    max_chars = max_tokens * CHARS_PER_TOKEN_VI
+
+    for para in paragraphs:
+        para_length = len(para)
+
+        # Nếu thêm đoạn này vào sẽ vượt quá limit
+        if current_length + para_length > max_chars and current_chunk:
+            # Lưu chunk hiện tại
+            chunks.append("\n\n".join(current_chunk))
+            current_chunk = [para]
+            current_length = para_length
+        else:
+            # Thêm đoạn vào chunk hiện tại
+            current_chunk.append(para)
+            current_length += para_length
+
+    # Thêm chunk cuối cùng
+    if current_chunk:
+        chunks.append("\n\n".join(current_chunk))
+
+    return chunks
+
+
+def call_ollama_summary_single(text: str, percent: float, ollama_url: str, model: str = "mistral") -> str:
+    """Call Ollama API for single chunk summarization"""
     try:
         # Calculate number of sentences
         import nltk
@@ -89,6 +159,88 @@ def call_ollama_summary(text: str, percent: float, ollama_url: str, model: str =
             return text[:len(text)//3]
 
 
+def summarize_chunk_wrapper(args):
+    """Wrapper function for parallel chunk summarization"""
+    chunk_idx, chunk, percent, ollama_url, model = args
+    try:
+        logging.info(f"Summarizing chunk {chunk_idx} (~{estimate_token_count(chunk)} tokens)")
+        summary = call_ollama_summary_single(chunk, percent, ollama_url, model)
+        logging.info(f"Chunk {chunk_idx} completed")
+        return (chunk_idx, summary, None)
+    except Exception as e:
+        logging.error(f"Failed to summarize chunk {chunk_idx}: {e}")
+        # Fallback: use first part of chunk
+        try:
+            import nltk
+            try:
+                nltk.data.find('tokenizers/punkt')
+            except LookupError:
+                nltk.download('punkt', quiet=True)
+            sentences = nltk.sent_tokenize(chunk)
+            num_sentences = max(2, int(len(sentences) * percent))
+            fallback_summary = " ".join(sentences[:num_sentences])
+            return (chunk_idx, fallback_summary, str(e))
+        except Exception as fallback_error:
+            logging.error(f"Fallback also failed for chunk {chunk_idx}: {fallback_error}")
+            return (chunk_idx, chunk[:1000], str(fallback_error))
+
+
+def call_ollama_summary(text: str, percent: float, ollama_url: str, model: str = "mistral") -> str:
+    """
+    Call Ollama API for text summarization with hierarchical chunking and parallel processing
+    Automatically handles large texts by splitting into chunks and processing them in parallel
+    """
+    estimated_tokens = estimate_token_count(text)
+    logging.info(f"Text estimated at ~{estimated_tokens} tokens ({len(text)} chars)")
+
+    # If text is within token limit, summarize directly
+    if estimated_tokens <= MAX_TOKENS:
+        logging.info("Text within token limit, using direct summarization")
+        return call_ollama_summary_single(text, percent, ollama_url, model)
+
+    # Text is too large, use hierarchical summarization with parallel processing
+    logging.info(f"Text exceeds token limit, using hierarchical summarization with parallel processing")
+    chunks = chunk_text_by_tokens(text, MAX_TOKENS)
+    logging.info(f"Split text into {len(chunks)} chunks, processing with {MAX_WORKERS} workers")
+
+    # Step 1: Summarize each chunk in parallel
+    chunk_summaries = [None] * len(chunks)  # Pre-allocate to maintain order
+
+    # Prepare arguments for parallel processing
+    chunk_args = [
+        (i + 1, chunk, percent, ollama_url, model)
+        for i, chunk in enumerate(chunks)
+    ]
+
+    # Use ThreadPoolExecutor for parallel processing
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        # Submit all tasks
+        future_to_idx = {
+            executor.submit(summarize_chunk_wrapper, args): args[0]
+            for args in chunk_args
+        }
+
+        # Collect results as they complete
+        for future in as_completed(future_to_idx):
+            chunk_idx, summary, error = future.result()
+            chunk_summaries[chunk_idx - 1] = summary
+            if error:
+                logging.warning(f"Chunk {chunk_idx} had error: {error}")
+
+    # Step 2: Combine chunk summaries
+    combined_summary = "\n\n".join(chunk_summaries)
+    logging.info(f"Combined summaries length: {len(combined_summary)} chars (~{estimate_token_count(combined_summary)} tokens)")
+
+    # Step 3: If combined summary is still too large, recursively summarize
+    if estimate_token_count(combined_summary) > MAX_TOKENS:
+        logging.info("Combined summary still too large, applying recursive summarization")
+        return call_ollama_summary(combined_summary, percent, ollama_url, model)
+    else:
+        # Final summarization of combined chunks
+        logging.info("Applying final summarization to combined chunks")
+        return call_ollama_summary_single(combined_summary, percent, ollama_url, model)
+
+
 def main():
     logging.info("Starting Ollama summarization service...")
 
@@ -97,7 +249,9 @@ def main():
         auto_offset_reset='latest',  # Changed to 'latest' to skip old stuck messages
         enable_auto_commit=False,
         max_poll_records=5,
-        max_poll_interval_ms=600000,
+        max_poll_interval_ms=1800000,  # 30 minutes for large text chunking
+        session_timeout_ms=60000,  # 60 seconds session timeout
+        heartbeat_interval_ms=20000,  # 20 seconds heartbeat
         group_id="7_single_ollama_v2",  # Changed group_id to reset offset
         value_deserializer=lambda x: loads(x.decode('utf-8')))
 

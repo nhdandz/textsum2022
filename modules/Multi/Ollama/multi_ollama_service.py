@@ -113,11 +113,11 @@ def main():
 
     consumer = KafkaConsumer(
         bootstrap_servers=init.configs["bootstrap_servers"],
-        auto_offset_reset='latest',  # Changed to 'latest' to skip old stuck messages
+        auto_offset_reset='earliest',  # Changed to 'earliest' to process old messages
         enable_auto_commit=False,
         max_poll_records=5,
         max_poll_interval_ms=600000,
-        group_id="30_multi_ollama_v2",  # Changed group_id to reset offset
+        group_id="30_multi_ollama_v3",  # Changed group_id to reset offset and read from beginning
         value_deserializer=lambda x: loads(x.decode('utf-8')))
 
     topic = "30_multi_ollama"
