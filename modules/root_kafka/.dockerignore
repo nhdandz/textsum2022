@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+*.log
+*.db
+test*.py
+.pytest_cache/

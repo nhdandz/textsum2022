@@ -1,0 +1,2 @@
+# Requirements for environment variable management
+python-dotenv>=1.0.0

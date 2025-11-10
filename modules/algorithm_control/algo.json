@@ -1,0 +1,385 @@
+
+[{
+	"algorId" : 30,
+	"displayName" : "Multi Ollama",
+	"description" : "Tóm tắt nhiều văn bản sử dụng Ollama",
+	"urlAPI" : "http://multi-ollama-service:11434",
+	"needPercentLong" : true,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "30_multi_ollama"
+},
+
+{
+	"algorId" : 7,
+	"displayName" : "Ollama (Single)",
+	"description" : "Tóm tắt văn bản đơn sử dụng Ollama",
+	"urlAPI" : "http://ollama-service:11434",
+	"needPercentLong" : true,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "7_single_ollama"
+},
+
+{
+	"algorId" : 31,
+	"displayName" : "Brio",
+	"description" : "Brio",
+	"urlAPI" : "",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "31_single_brio"
+},
+
+{
+	"algorId" : 34,
+	"displayName" : "LongPegasus",
+	"description" : "LongPegasus",
+	"urlAPI" : "http://192.168.210.42:6800/MultiPegSingle",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "34_single_longpegassus"
+},
+
+
+{
+	"algorId" : 29,
+	"displayName" : "LongBart",
+	"description" : "LongBart",
+	"urlAPI" : "http://192.168.210.42:6700/MultiBartSingle",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "29_single_longbart",
+	"gpu_infer" : 0.5
+},
+
+
+{
+	"algorId" : 28,
+	"displayName" : "Primera arxiv",
+	"description" : "Primera arxiv",
+	"urlAPI" : "http://192.168.2.25:6350/PrimeraArxiv",
+	"needPercentLong" : true,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : ""
+
+},
+
+
+{
+	"algorId" : 27,
+	"displayName" : "Pegasus arxiv",
+	"description" : "Pegasus arxiv",
+	"urlAPI" : "http://192.168.210.42:6550/arxiv",
+	"needPercentLong" : true,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "27_single_pegassus_arvix"
+	
+},
+
+{
+	"algorId" : 26,
+	"displayName" : "LSG Bart",
+	"description" : "LSG Bart",
+	"urlAPI" : "http://192.168.210.42:6450/lsg16x",
+	"needPercentLong" : true,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "26_single_lsg_bart"
+	
+},
+
+{
+	"algorId" : 25,
+	"displayName" : "MultiLSA",
+	"description" : "MultiLSA",
+	"urlAPI" : "http://192.168.210.42:7302/MultiLSA",
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "25_multi_lsa"
+	
+},
+
+{
+	"algorId" : 24,
+	"displayName" : "MultiLexRank",
+	"description" : "MultiLexRank",
+	"urlAPI" : "http://192.168.210.42:7302/MultiLexRank",
+	"needPercentLong" : true,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "24_multi_lexrank"
+	
+},
+
+{
+	"algorId" : 23,
+	"displayName" : "MultiTexRank",
+	"description" : "MultiTexRank",
+	"urlAPI" : "http://192.168.210.42:7302/MultiTexRank",
+	"needPercentLong" : true,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "23_multi_textrank"
+	
+},
+
+{
+	"algorId" : 22,
+	"displayName" : "TextClustering",
+	"description" : "TextClustering",
+	"urlAPI" : "http://192.168.210.42:9400/TextClustering",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : ""
+	
+},
+
+{
+	"algorId" : 21,
+	"displayName" : "primera",
+	"description" : "primera",
+	"urlAPI" : "http://192.168.2.25:4100/primera",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "21_multi_primera"
+	
+},
+
+{
+	"algorId" : 20,
+	"displayName" : "MultiPeg",
+	"description" : "MultiPeg",
+	"urlAPI" : "http://192.168.210.42:6800/MultiPeg",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "20_multi_peg"
+	
+},
+
+{
+	"algorId" : 19,
+	"displayName" : "MultiBart",
+	"description" : "MultiBart",
+	"urlAPI" : "http://192.168.210.42:6700/MultiBart",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "19_multi_bart",
+	"gpu_infer" : 0.5
+},
+
+{
+	"algorId" : 18,
+	"displayName" : "HerterSum",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.2.25:8899/HerterSum",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "18_multi_hertersum"
+	
+},
+
+
+{
+	"algorId" : 17,
+	"displayName" : "HiMap",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.2.25:8898/HiMap",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "17_multi_himap"
+	
+},
+
+{
+	"algorId" : 16,
+	"displayName" : "MemSum",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.2.25:8100/MemSum",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "16_single_memsum",
+	"gpu_infer" : 0.2
+},
+
+{
+	"algorId" : 15,
+	"displayName" : "LSA",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:7300/LSA",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "3_single_lsa"
+	
+},
+
+{
+	"algorId" : 14,
+	"displayName" : "TexRank",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:7300/TexRank",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "2_single_textrank"
+	
+},
+
+{
+	"algorId" : 13,
+	"displayName" : "Lexrank",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:7300/LexRank",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "1_single_lexrank"
+	
+},
+
+{
+	"algorId" : 12,
+	"displayName" : "BertAbs",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:6500/BertExtAbs",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "12_single_bertAbs"
+	
+},
+
+{
+	"algorId" : 11,
+	"displayName" : "Bart",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:6400/BARTD126",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "11_single_bart"
+	
+},
+
+{
+	"algorId" : 10,
+	"displayName" : "Sim CLS",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:6300/SimCLS",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "10_single_simcls",
+	"gpu_infer" : 1.3
+},
+
+{
+	"algorId" : 9,
+	"displayName" : "Pegasus CNN",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:6200/PegSum",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "9_single_pegasus_cnn"
+	
+},
+
+{
+	"algorId" : 8,
+	"displayName" : "BigBirdPubmed",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.2.25:5300/BigBirdPubmed",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "8_single_pubmed"
+	
+},
+
+{
+	"algorId" : 35,
+	"displayName" : "BigBirdArxiv",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.2.25:5200/BigBirdArxiv",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "35_single_bigbirdarvix"
+
+},
+
+{
+	"algorId" : 5,
+	"displayName" : "Match Sum",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.2.25:7200/matchsum",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "5_single_matchsum"
+	
+},
+
+{
+	"algorId" : 4,
+	"displayName" : "BertExt",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.2.25:7100/presum",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "4_single_bertext",
+	"gpu_infer" : 0.1
+},
+
+
+{
+	"algorId" : 3,
+	"displayName" : "LSA",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:7300/LSA",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "3_single_lsa"
+	
+},
+
+
+{
+	"algorId" : 2,
+	"displayName" : "TexRank",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:7300/TexRank",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "2_single_textrank"
+	
+},
+
+{
+	"algorId" : 1,
+	"displayName" : "Lexrank",
+	"description" : "Mo ta",
+	"urlAPI" : "http://192.168.210.42:7300/LexRank",
+	"needPercentLong" : false,
+	"enable" : 1,
+	"urlChangeStatus" : "",
+	"topic" : "1_single_lexrank"
+	
+}]

@@ -1,0 +1,16 @@
+{"algorId": 1, "typeAIId": 1, "displayName": "Lexrank", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:7300/LexRank", "urlStatusAPI": "https://${HOST_IP}:7300"}
+{"algorId": 2, "typeAIId": 1, "displayName": "TexRank", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:7300/TexRank", "urlStatusAPI": "https://${HOST_IP}:7300"}
+{"algorId": 3, "typeAIId": 1, "displayName": "LSA", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:7300/LSA", "urlStatusAPI": "https://${HOST_IP}:7300"}
+{"algorId": 4, "typeAIId": 1, "displayName": "BertExt", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:7100/presum", "urlStatusAPI": "http://${HOST_IP}:7100"}
+{"algorId": 5, "typeAIId": 1, "displayName": "Match Sum", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:7200/matchsum", "urlStatusAPI": "http://${HOST_IP}:7200"}
+{"algorId": 6, "typeAIId": 2, "displayName": "BigBirdBigPatent", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:5100/BigBirdBigPatent", "urlStatusAPI": "http://${HOST_IP}:5100"}
+{"algorId": 7, "typeAIId": 2, "displayName": "BigBirdArxiv", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:5200/BigBirdArxiv", "urlStatusAPI": "http://${HOST_IP}:5200"}
+{"algorId": 8, "typeAIId": 2, "displayName": "BigBirdPubmed", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:5300/BigBirdPubmed", "urlStatusAPI": "http://${HOST_IP}:5300"}
+{"algorId": 9, "typeAIId": 3, "displayName": "Pegasus CNN", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:6200/PegSum", "urlStatusAPI": "http://${HOST_IP}:6200"}
+{"algorId": 10, "typeAIId": 3, "displayName": "Sim CLS", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:6300/SimCLS", "urlStatusAPI": "http://${HOST_IP}:6300"}
+{"algorId": 11, "typeAIId": 3, "displayName": "Bart", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:6400/BARTD126", "urlStatusAPI": "http://${HOST_IP}:6400"}
+{"algorId": 12, "typeAIId": 3, "displayName": "BertAbs", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:6500/BertExtAbs", "urlStatusAPI": "http://${HOST_IP}:6500"}
+{"algorId": 13, "typeAIId": 4, "displayName": "Lexrank", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:7300/LexRank", "urlStatusAPI": "https://${HOST_IP}:7300"}
+{"algorId": 14, "typeAIId": 4, "displayName": "TexRank", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:7300/TexRank", "urlStatusAPI": "https://${HOST_IP}:7300"}
+{"algorId": 15, "typeAIId": 4, "displayName": "LSA", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:7300/LSA", "urlStatusAPI": "http://${HOST_IP}:7300"}
+{"algorId": 16, "typeAIId": 4, "displayName": "MemSum", "description": "Mo ta", "urlAPI": "http://${HOST_IP}:8100/MemSum", "urlStatusAPI": "http://${HOST_IP}:8100"}

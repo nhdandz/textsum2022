@@ -1,0 +1,171 @@
+[
+  {
+    "id": 1,
+    "aiId": 1,
+    "typeAIId": 1,
+    "algorId": 1
+  },
+  {
+    "id": 2,
+    "aiId": 1,
+    "typeAIId": 1,
+    "algorId": 2
+  },
+  {
+    "id": 3,
+    "aiId": 1,
+    "typeAIId": 1,
+    "algorId": 3
+  },
+  {
+    "id": 4,
+    "aiId": 1,
+    "typeAIId": 1,
+    "algorId": 4
+  },
+  {
+    "id": 5,
+    "aiId": 1,
+    "typeAIId": 1,
+    "algorId": 5
+  },
+
+  {
+    "id": 7,
+    "aiId": 2,
+    "typeAIId": 2,
+    "algorId": 7
+  },
+  {
+    "id": 8,
+    "aiId": 2,
+    "typeAIId": 2,
+    "algorId": 8
+  },
+  {
+    "id": 9,
+    "aiId": 1,
+    "typeAIId": 2,
+    "algorId": 9
+  },
+  {
+    "id": 10,
+    "aiId": 1,
+    "typeAIId": 2,
+    "algorId": 10
+  },
+  {
+    "id": 11,
+    "aiId": 1,
+    "typeAIId": 2,
+    "algorId": 11
+  },
+  {
+    "id": 12,
+    "aiId": 1,
+    "typeAIId": 2,
+    "algorId": 12
+  },
+  {
+    "id": 13,
+    "aiId": 2,
+    "typeAIId": 1,
+    "algorId": 13
+  },
+  {
+    "id": 14,
+    "aiId": 2,
+    "typeAIId": 1,
+    "algorId": 14
+  },
+  {
+    "id": 15,
+    "aiId": 2,
+    "typeAIId": 1,
+    "algorId": 15
+  },
+  {
+    "id": 16,
+    "aiId": 2,
+    "typeAIId": 1,
+    "algorId": 16
+  },
+  {
+    "id": 17,
+    "aiId": 3,
+    "typeAIId": 2,
+    "algorId": 17
+  },
+  {
+    "id": 18,
+    "aiId": 3,
+    "typeAIId": 1,
+    "algorId": 18
+  },
+  {
+    "id": 19,
+    "aiId": 3,
+    "typeAIId": 2,
+    "algorId": 19
+  },
+  {
+    "id": 20,
+    "aiId": 3,
+    "typeAIId": 2,
+    "algorId": 20
+  },
+  {
+    "id": 21,
+    "aiId": 3,
+    "typeAIId": 2,
+    "algorId": 21
+  },
+{
+    "id": 23,
+    "aiId": 3,
+    "typeAIId": 2,
+    "algorId": 23
+  },
+  {
+    "id": 24,
+    "aiId": 3,
+    "typeAIId": 2,
+    "algorId": 24
+  },
+  {
+    "id": 25,
+    "aiId": 3,
+    "typeAIId": 2,
+    "algorId": 25
+  },
+  {
+    "id": 26,
+    "aiId": 2,
+    "typeAIId": 2,
+    "algorId": 26
+  },
+  {
+    "id": 27,
+    "aiId": 2,
+    "typeAIId": 2,
+    "algorId": 27
+  },
+  {
+    "id": 28,
+    "aiId": 2,
+    "typeAIId": 1,
+    "algorId": 28
+  },
+  {
+    "id": 29,
+    "aiId": 2,
+    "typeAIId": 2,
+    "algorId": 29
+  },
+  {
+    "id": 30,
+    "aiId": 2,
+    "typeAIId": 2,
+    "algorId": 30
+  }
+]

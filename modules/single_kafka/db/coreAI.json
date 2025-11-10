@@ -1,0 +1,12 @@
+[
+  {
+    "aiID": 1,
+    "description": "Short Summarization",
+    "displayName": "Short Summarization"
+  },
+  {
+    "aiID": 2,
+    "description": "Long Summarization",
+    "displayName": "Long Summarization"
+  }
+]

@@ -1,0 +1,83 @@
+from calendar import TUESDAY
+from kafka import KafkaProducer,KafkaConsumer
+import json 
+from json import loads
+import random
+
+
+with open("1.txt", "r") as r:
+    data1 = r.read()
+
+
+with open("encoded-20220930142500.txt", "r") as r:
+    data = r.read()
+
+with open("encoded-20220727080145.txt", "r") as r:
+    data2 = r.read()
+
+
+def test():
+    producer = KafkaProducer(bootstrap_servers='192.168.210.42:9092',
+                max_request_size=100000000,
+                value_serializer=lambda x: json.dumps(x).encode('utf-8'))
+    ngan = [1,2,3,4,10,11]
+    dai = [13,14,15,16,29,30]
+    mul =[17,18,19,20,23,24]
+    r1=random.choice(ngan)
+    r2  = random.choice(dai)
+    r3  = random.choice(mul)
+    r4 = random.choice(mul)
+    # for i in range(5,15):
+    doc = {
+        "user_id":"11212",
+        "sumary_id":1,
+        "documents":[
+            {
+            "documents_id":"12122",
+            "raw_text":data1,
+            "file_type":0,
+            "page_from": 0,
+            "page_to" :9999
+            }
+            # {
+            # "documents_id":"12122",
+            # "raw_text":data2,
+            # "file_type":1,
+            # "page_from": 0,
+            # "page_to" :9999
+            # },
+            # {
+            # "documents_id":"12122",
+            # "raw_text":data1,
+            # "file_type":1,
+            # "page_from": 0,
+            # "page_to" :9999
+            # }
+            ],
+        "topic": [
+            # {
+            #     "keywords":[["the", "I"],[]],
+            #     "topic_id":123,
+            #     "id_mapAlgTypeAI" :16
+            # },
+            # {
+            #     "keywords":[["the","I"],[]],
+            #     "topic_id":123,
+            #     "id_mapAlgTypeAI" :19
+            #     }
+        ],
+        "percent_output": 0.1,
+        "id_mapAlgTypeAI":[11],
+        "is_single": True,
+        "original_doc_ids":["12122", "12345"]
+    }
+    # # news = json.dumps(doc)
+    # # doc.update({"is_single": random.randint(0,1)})
+    # with open("test.json", "r") as r:
+    #     doc = json.load(r)
+    print("send message")
+    producer.send("topic_input_ai", doc)
+    print("finished!!")
+if __name__=="__main__":
+    for i in range(200):
+        test()

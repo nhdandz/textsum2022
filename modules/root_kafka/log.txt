@@ -1,0 +1,12 @@
+Thuat toan: http://192.168.2.25:8100/MemSum
+total    : 5041
+total after 0 interation   : 5052
+total after 100 interation   : 4997
+total after 300 interation   : 5031
+total after 500 interation   : 4986
+Thuat toan: http://192.168.2.25:7100/presum
+total    : 4987
+total after 0 interation   : 4987
+total after 100 interation   : 4987
+total after 300 interation   : 4837
+total after 500 interation   : 4837

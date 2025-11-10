@@ -1,0 +1,358 @@
+version: '3.8'
+
+# Load environment variables from .env file
+# Make sure to set HOST_IP in .env before running docker-compose
+
+services:
+  # ==================== Infrastructure Services ====================
+  kafka-1:
+    image: apache/kafka:4.0.0
+    container_name: kafka-1
+    restart: always
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-1:19092,EXTERNAL://${HOST_IP}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093
+      KAFKA_CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - textsum-network
+    healthcheck:
+      test: nc -z localhost 9092 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:19092
+    ports:
+      - "8080:8080"
+    networks:
+      - textsum-network
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+    restart: always
+
+  # ==================== Core Services ====================
+  algo-control:
+    build:
+      context: ./modules/algorithm_control
+      dockerfile: Dockerfile
+    container_name: algo-control
+    ports:
+      - "6789:6789"
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+    networks:
+      - textsum-network
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  app-process:
+    build:
+      context: ./modules/single_kafka
+      dockerfile: Dockerfile
+    container_name: app-process
+    ports:
+      - "9980:9980"
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+    networks:
+      - textsum-network
+    restart: always
+    command: python app_process.py
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+
+  # ==================== Kafka Router Services ====================
+  root-kafka:
+    build:
+      context: ./modules/root_kafka
+      dockerfile: Dockerfile
+    container_name: root-kafka
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      app-process:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python root_kafka.py
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  result-consumer:
+    build:
+      context: ./modules/root_kafka
+      dockerfile: Dockerfile
+    container_name: result-consumer
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+    networks:
+      - textsum-network
+    restart: always
+    command: python result_consumer.py
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+      - BACKEND_API_URL=${BACKEND_API_URL:-http://localhost:8000/api/result}
+
+  multi-kafka:
+    build:
+      context: ./modules/root_kafka
+      dockerfile: Dockerfile
+    container_name: multi-kafka
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      root-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python multi_kafka.py
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  single-kafka:
+    build:
+      context: ./modules/single_kafka
+      dockerfile: Dockerfile
+    container_name: single-kafka
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      root-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python single_root.py
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  # ==================== Single Document Services ====================
+  textrank:
+    env_file:
+      - .env
+    build:
+      context: ./modules/Single/TexRank
+      dockerfile: Dockerfile
+    container_name: textrank
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      single-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python texrank.py
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  lexrank:
+    env_file:
+      - .env
+    build:
+      context: ./modules/Single/TexRank
+      dockerfile: Dockerfile
+    container_name: lexrank
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      single-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python lexrank.py
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  lsa:
+    env_file:
+      - .env
+    build:
+      context: ./modules/Single/TexRank
+      dockerfile: Dockerfile
+    container_name: lsa
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      single-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python lsa.py
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  # ==================== Multi Document Services ====================
+  m-textrank:
+    build:
+      context: ./modules/Multi/MulTexRank
+      dockerfile: Dockerfile
+    container_name: m-textrank
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      multi-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python multi_texrank.py
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  m-lexrank:
+    build:
+      context: ./modules/Multi/MulTexRank
+      dockerfile: Dockerfile
+    container_name: m-lexrank
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      multi-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python multi_lexrank.py
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  m-lsa:
+    build:
+      context: ./modules/Multi/MulTexRank
+      dockerfile: Dockerfile
+    container_name: m-lsa
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      multi-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python multi_lsa.py
+    env_file:
+      - .env
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  # ==================== Additional Services ====================
+  clustering:
+    env_file:
+      - .env
+    build:
+      context: ./modules/Text-similarity
+      dockerfile: Dockerfile
+    container_name: clustering
+    ports:
+      - "9400:9400"
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+    networks:
+      - textsum-network
+    restart: always
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+
+  # ==================== Ollama Services ====================
+  # Note: Using Ollama running on host machine at ${HOST_IP}:11434
+  # Make sure Ollama is running: systemctl status ollama or ollama serve
+
+  # Single-document Ollama service
+  ollama-service:
+    env_file:
+      - .env
+    build:
+      context: ./modules/Single/Ollama
+      dockerfile: Dockerfile
+    container_name: ollama-service
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      single-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python ollama_service.py
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+      - OLLAMA_URL=${OLLAMA_URL}
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
+
+  # Multi-document Ollama service
+  multi-ollama-service:
+    env_file:
+      - .env
+    build:
+      context: ./modules/Multi/Ollama
+      dockerfile: Dockerfile
+    container_name: multi-ollama-service
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      multi-kafka:
+        condition: service_started
+    networks:
+      - textsum-network
+    restart: always
+    command: python multi_ollama_service.py
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092
+      - OLLAMA_URL=${OLLAMA_URL}
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
+
+networks:
+  textsum-network:
+    name: textsum-network
+    driver: bridge
+
+volumes:
+  kafka_data:
+    driver: local
+

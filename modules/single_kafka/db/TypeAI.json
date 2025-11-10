@@ -1,0 +1,12 @@
+[
+  {
+    "typeAIId": 1,
+    "displayName": "Extract model",
+    "description": "Extract model"
+  },
+  {
+    "typeAIId": 2,
+    "displayName": "Abstract model",
+    "description": "Abstract model"
+  }
+]

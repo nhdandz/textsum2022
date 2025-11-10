@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+*.log
+test*.py
+.pytest_cache/
+sumy/tests/

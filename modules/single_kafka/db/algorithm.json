@@ -1,0 +1,204 @@
+[
+  {
+    "algorId": 1,
+    "displayName": "Lexrank",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:7300/LexRank",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 2,
+    "displayName": "TexRank",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:7300/TexRank",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 3,
+    "displayName": "LSA",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:7300/LSA",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 4,
+    "displayName": "BertExt",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:7100/presum",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 5,
+    "displayName": "Match Sum",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:7200/matchsum",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 7,
+    "displayName": "BigBirdArxiv",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:5200/BigBirdArxiv",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 8,
+    "displayName": "BigBirdPubmed",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:5300/BigBirdPubmed",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 9,
+    "displayName": "Pegasus CNN",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:6200/PegSum",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 10,
+    "displayName": "Sim CLS",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:6300/SimCLS",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 11,
+    "displayName": "Bart",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:6400/BARTD126",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 12,
+    "displayName": "BertAbs",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:6500/BertExtAbs",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 13,
+    "displayName": "Lexrank",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:7300/LexRank",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 14,
+    "displayName": "TexRank",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:7300/TexRank",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 15,
+    "displayName": "LSA",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:7300/LSA",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 16,
+    "displayName": "MemSum",
+    "description": "Mo ta",
+    "urlAPI": "http://${HOST_IP}:8100/MemSum",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 17,
+    "displayName": "HiMap",
+    "description": "Mo ta",
+    "urlAPI": "https://${HOST_IP}:8898/HiMap",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 18,
+    "displayName": "HerterSum",
+    "description": "Mo ta",
+    "urlAPI": "https://${HOST_IP}:8899/HerterSum",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 19,
+    "displayName": "MultiBart",
+    "description": "MultiBart",
+    "urlAPI": "http://${HOST_IP}:6700/MultiBart",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 20,
+    "displayName": "MultiPeg",
+    "description": "MultiPeg",
+    "urlAPI": "http://${HOST_IP}:6800/MultiPeg",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 21,
+    "displayName": "primera",
+    "description": "primera",
+    "urlAPI": "http://${HOST_IP}:4100/primera",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 22,
+    "displayName": "TextClustering",
+    "description": "TextClustering",
+    "urlAPI": "http://${HOST_IP}:9400/TextClustering",
+    "needPercentLong": false
+  },
+ {
+    "algorId": 23,
+    "displayName": "MultiTexRank",
+    "description": "MultiTexRank",
+    "urlAPI": "http://${HOST_IP}:7302/MultiTexRank",
+    "needPercentLong": true
+  },
+  {
+    "algorId": 24,
+    "displayName": "MultiLexRank",
+    "description": "MultiLexRank",
+    "urlAPI": "http://${HOST_IP}:7302/MultiLexRank",
+    "needPercentLong": true
+  },
+  {
+    "algorId": 25,
+    "displayName": "MultiLSA",
+    "description": "MultiLSA",
+    "urlAPI": "http://${HOST_IP}:7302/MultiLSA"
+  },
+  {
+    "algorId": 26,
+    "displayName": "LSG Bart",
+    "description": "LSG Bart",
+    "urlAPI": "http://${HOST_IP}:6450/lsg16x",
+    "needPercentLong": true
+  },
+  {
+    "algorId": 27,
+    "displayName": "Pegasus arxiv",
+    "description": "Pegasus arxiv",
+    "urlAPI": "http://${HOST_IP}:6550/arxiv",
+    "needPercentLong": true
+  },
+  {
+    "algorId": 28,
+    "displayName": "Primera arxiv",
+    "description": "Primera arxiv",
+    "urlAPI": "http://${HOST_IP}:6350/PrimeraArxiv",
+    "needPercentLong": true
+  },
+  {
+    "algorId": 29,
+    "displayName": "MultiBart",
+    "description": "MultiBart",
+    "urlAPI": "http://${HOST_IP}:6700/MultiBartSingle",
+    "needPercentLong": false
+  },
+  {
+    "algorId": 30,
+    "displayName": "MultiPeg",
+    "description": "MultiPeg",
+    "urlAPI": "http://${HOST_IP}:6800/MultiPegSingle",
+    "needPercentLong": false
+  }
+]

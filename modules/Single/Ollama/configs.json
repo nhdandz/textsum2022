@@ -1,0 +1,6 @@
+{
+  "bootstrap_servers": "${KAFKA_BOOTSTRAP_SERVERS}",
+  "url_status_Web": "${STATUS_WEB_URL}",
+  "ollama_url": "${OLLAMA_URL}",
+  "ollama_model": "${OLLAMA_MODEL}"
+}

@@ -1,0 +1,7 @@
+{
+    "url_cluster": "http://clustering:9400/TextClustering",
+    "bootstrap_servers":["kafka-1:9092"],
+    "listen_topic":"19_multi_bart",
+    "url_status_Web":"${STATUS_WEB_URL}",
+    "send_topic_result":"result_ai"
+}
