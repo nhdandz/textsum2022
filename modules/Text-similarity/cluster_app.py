@@ -25,7 +25,7 @@ def post2():
         print("start")
         if content['list_doc'] is not None:
             # if random.choice(ar) == 1: 
-            #     return redirect("http://192.168.210.42:9450/TextClustering", code=307)
+            #     return redirect("http://192.168.213.13:9450/TextClustering", code=307)
             # else:
                 tic= time.time()
 

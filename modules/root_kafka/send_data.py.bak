@@ -3,7 +3,6 @@ from kafka import KafkaProducer,KafkaConsumer
 import json 
 from json import loads
 import random
-import os
 
 
 with open("1.txt", "r") as r:
@@ -18,9 +17,7 @@ with open("encoded-20220727080145.txt", "r") as r:
 
 
 def test():
-    bootstrap_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', '192.168.213.13:9092')
-
-    producer = KafkaProducer(bootstrap_servers=bootstrap_servers,
+    producer = KafkaProducer(bootstrap_servers='192.168.213.13:9092',
                 max_request_size=100000000,
                 value_serializer=lambda x: json.dumps(x).encode('utf-8'))
     ngan = [1,2,3,4,10,11]

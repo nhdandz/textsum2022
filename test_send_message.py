@@ -13,7 +13,7 @@ test_message = {
     "documents": [{
         "documents_id": "doc_001",
         "raw_text": "Đây là văn bản test để kiểm tra routing đến Ollama. Ollama là một công cụ AI mạnh mẽ. Nó có thể tóm tắt văn bản rất tốt. Chúng ta đang test xem message có được route đúng không.",
-        "file_type": "txt",
+        "file_type": 0,  # 0 = TEXT, 1 = PDF, 2 = DOCX, 3 = DOC
         "page_from": None,
         "page_to": None
     }]

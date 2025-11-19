@@ -6,16 +6,19 @@ from threading import Thread
 from helper import get_raw_text
 
 def _read_env():
-    pathFile='.env'   
-    try:
-        with open(pathFile,'r',encoding='utf-8') as fp:
-            config=fp.read()
-            config=json.loads(config)  
-            os.environ['kafka_config']=str(config['kafka_config'])
-        print('read file config') 
-    except Exception as e:
-        print(e)
-        pass     
+    # Read from environment variables set by docker-compose from root .env file
+    kafka_bootstrap = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka-1:19092')
+
+    config = {
+        'kafka_config': {
+            'bootstrap_servers': [kafka_bootstrap],
+            'topic_get_data': 'upload_data',
+            'topic_send_results': 'data_content'
+        }
+    }
+
+    os.environ['kafka_config'] = str(config['kafka_config'])
+    print('Loaded config from environment variables')
     return config
 
 def worker(documents):

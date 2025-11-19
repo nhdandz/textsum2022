@@ -55,7 +55,7 @@ producer = KafkaProducer(bootstrap_servers=init.bootstrap_servers,
                 max_request_size=100000000,
                 value_serializer=lambda x: json.dumps(x).encode('utf-8'))
 
-url_status="http://192.168.210.42:5002/api/multisum/status"
+url_status = os.getenv('STATUS_WEB_URL', 'http://192.168.213.13:5002/api/multisum/status')
 for data in consumer:
     message = data.value
     current_partition = data.partition

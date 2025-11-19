@@ -1,9 +1,9 @@
 
 import json
-from bson import ObjectId 
+import os
+from bson import ObjectId
 from pymongo import MongoClient
 import urllib
-import json
 import urllib.parse
 from pymongo import MongoClient
 from sys import exit
@@ -21,9 +21,18 @@ def Initialize():
     global my_conn, my_db, env_configs,configs
     with open("configs.json", "r") as r:
         configs = json.load(r)
-        
-    with open(".env", "r") as r:
-        env_configs = json.load(r)
+
+    # Read from environment variables set by docker-compose from root .env file
+    env_configs = {
+        'host': os.getenv('MONGO_HOST', '192.168.213.13'),
+        'port': int(os.getenv('MONGO_PORT', '27017')),
+        'auth_database': os.getenv('MONGO_AUTH_DB', 'admin'),
+        'username': os.getenv('MONGO_USERNAME', ''),
+        'password': os.getenv('MONGO_PASSWORD', ''),
+        'database': os.getenv('MONGO_DATABASE', 'ai_texsum'),
+        'mapAlgTypeAI_collection': 'mapAlgTypeAI',
+        'algorithm_collection': 'algorithm'
+    }
     
     username_rh = urllib.parse.quote_plus(env_configs['username'].strip())
     password_rh = urllib.parse.quote_plus(env_configs['password'].strip())
@@ -103,7 +112,7 @@ def insert_new_algo():
         "algorId" : 30,# ?? update new id
         "displayName" : "LongPegasus ???",
         "description" : "LongPegasus ???",
-        "urlAPI" : "http://192.168.210.42:6800/MultiPegSingle ????",
+        "urlAPI" : "http://192.168.213.13:6800/MultiPegSingle ????",
         "needPercentLong" : False,
         "enable" : 0,
         "urlChangeStatus" : "url ???"
@@ -169,6 +178,13 @@ def get_detail_algo(mapAlgTypeAI_id):
         maptype = json.load(r)
     with open("algo.json", "r") as r:
         algo = json.load(r)
+
+    # Expand environment variables in algo config
+    import os
+    host_ip = os.getenv('HOST_IP', '192.168.213.13')
+    for obj in algo:
+        if 'urlAPI' in obj and isinstance(obj['urlAPI'], str):
+            obj['urlAPI'] = obj['urlAPI'].replace('${HOST_IP}', host_ip)
 
     id_algo = None
     for obj in maptype:

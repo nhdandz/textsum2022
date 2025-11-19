@@ -13,9 +13,9 @@ logging.basicConfig(level=logging.INFO)
 
 # Token estimation constants
 CHARS_PER_TOKEN_VI = 4  # Vietnamese text: ~4 chars per token
-MAX_TOKENS = 30000  # Safety margin for 33k context window (conservative for better quality)
+MAX_TOKENS = 15000  # Safety margin for 33k context window (conservative for better quality)
 MAX_CHARS = MAX_TOKENS * CHARS_PER_TOKEN_VI
-MAX_WORKERS = 3  # Number of parallel workers for chunking (adjust based on GPU/CPU capacity)
+MAX_WORKERS = 4  # Number of parallel workers for chunking (adjust based on GPU/CPU capacity)
 
 class TestRebalanceListener(ConsumerRebalanceListener):
     def __init__(self, consumer: KafkaConsumer, error_partition: TopicPartition, error_offset: int):
@@ -39,6 +39,29 @@ class TestRebalanceListener(ConsumerRebalanceListener):
 def estimate_token_count(text: str) -> int:
     """Estimate token count for Vietnamese text"""
     return len(text) // CHARS_PER_TOKEN_VI
+
+
+def normalize_whitespace(text: str) -> str:
+    """
+    Normalize excessive whitespace in text
+    - Remove empty lines (no blank lines)
+    - Keep line breaks between sentences
+    - Remove trailing/leading whitespace from each line
+    - Replace multiple spaces with single space
+    """
+    import re
+
+    # Remove trailing/leading whitespace from each line and filter out empty lines
+    lines = [line.strip() for line in text.split('\n') if line.strip()]
+
+    # Join with newline to keep line structure
+    text = '\n'.join(lines)
+
+    # Replace multiple spaces with single space
+    text = re.sub(r' {2,}', ' ', text)
+
+    # Final trim
+    return text.strip()
 
 
 def chunk_text_by_tokens(text: str, max_tokens: int = MAX_TOKENS) -> list:
@@ -119,7 +142,7 @@ def call_ollama_summary_single(text: str, percent: float, ollama_url: str, model
             f"{ollama_url}/api/generate",
             json={
                 "model": model,
-                "prompt": f"Hãy tóm tắt văn bản sau đây thành khoảng {num_sentences} câu bằng tiếng Việt. Chỉ trả về phần tóm tắt, không thêm bất kỳ thẻ XML, tag hoặc giải thích nào khác. Chỉ trả về nội dung tóm tắt thuần túy:\n\n{text}",
+                "prompt": f"Hãy đọc và hiểu văn bản sau, sau đó viết lại thành bản tóm tắt tóm lược (abstractive summary) bằng tiếng Việt với khoảng {num_sentences} câu. DIỄN GIẢI LẠI nội dung bằng cách hiểu của bạn, đừng chỉ sao chép câu gốc. Trả về nội dung súc tích, rõ ràng, không thêm XML, tag hay giải thích:\n\n{text}",
                 "stream": False,
                 "options": {
                     "temperature": 0.3,
@@ -139,6 +162,9 @@ def call_ollama_summary_single(text: str, percent: float, ollama_url: str, model
             summary = re.sub(r'<[^>]+>', '', summary)
             summary = summary.strip()
 
+            # Normalize excessive whitespace (fix multiple newlines)
+            summary = normalize_whitespace(summary)
+
             logging.info(f"Ollama summarization successful, length: {len(summary)}")
             return summary
         else:
@@ -157,6 +183,84 @@ def call_ollama_summary_single(text: str, percent: float, ollama_url: str, model
             return " ".join(sentences[:num_sentences])
         except:
             return text[:len(text)//3]
+
+
+def call_ollama_combine_summaries(combined_text: str, percent: float, ollama_url: str, model: str = "mistral") -> str:
+    """
+    Call Ollama API to combine multiple chunk summaries into a coherent narrative text
+    This function creates a flowing document instead of bullet points
+    """
+    try:
+        # Calculate number of sentences for final summary
+        import nltk
+        try:
+            nltk.data.find('tokenizers/punkt')
+        except LookupError:
+            nltk.download('punkt', quiet=True)
+
+        sentences = nltk.sent_tokenize(combined_text)
+        # For combining phase, reduce output more aggressively to avoid long processing time
+        if len(sentences) > 50:
+            # For long combined texts, reduce more aggressively
+            target_ratio = percent * 0.8  # Reduce by half
+            num_sentences = max(10, int(len(sentences) * target_ratio))
+        else:
+            num_sentences = max(2, int(len(sentences) * percent))
+
+        logging.info(f"Combining {len(sentences)} sentences from chunks into {num_sentences} sentences")
+
+        # Call Ollama API with special prompt for combining summaries
+        response = requests.post(
+            f"{ollama_url}/api/generate",
+            json={
+                "model": model,
+                "prompt": f"""{combined_text}
+                Hãy đọc kỹ và hiểu các phần nội dung ở trên, sau đó viết lại thành một bản tóm tắt tóm lược (abstractive summary) bằng tiếng Việt, với khoảng {num_sentences} câu.
+
+YÊU CẦU QUAN TRỌNG:
+- DIỄN GIẢI LẠI nội dung bằng cách hiểu của bạn, KHÔNG chỉ sao chép câu gốc
+- Viết dưới dạng các đoạn văn (paragraphs) liền mạch, tự nhiên
+- KHÔNG sử dụng số thứ tự (1., 2., 3.), đầu mục, hay gạch đầu dòng
+- Sử dụng các từ nối để kết nối ý giữa các phần (ví dụ: "Bên cạnh đó", "Ngoài ra", "Đồng thời", v.v.)
+- Giữ đúng thứ tự logic và nội dung của văn bản gốc
+- Diễn đạt ngắn gọn, súc tích nhưng đầy đủ ý nghĩa
+- Chỉ trả về nội dung tóm tắt, không thêm XML, tag hay giải thích
+ 
+{combined_text}""",
+                "stream": False,
+                "options": {
+                    "temperature": 0.3,
+                    "top_p": 0.9
+                }
+            },
+            timeout=900  # Increased to 15 minutes for large combined summaries
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            summary = result.get("response", "").strip()
+
+            # Remove any XML-like tags from the response
+            import re
+            summary = re.sub(r'<think>.*?</think>', '', summary, flags=re.DOTALL)
+            summary = re.sub(r'<[^>]+>', '', summary)
+            summary = summary.strip()
+
+            # Normalize excessive whitespace (fix multiple newlines)
+            summary = normalize_whitespace(summary)
+
+            logging.info(f"Combined summarization successful, length: {len(summary)}")
+            return summary
+        else:
+            logging.error(f"Ollama API error: {response.status_code} - {response.text}")
+            # Fallback: return combined text as is
+            return combined_text
+
+    except Exception as e:
+        logging.error(f"Ollama combine summaries failed: {e}")
+        traceback.print_exc()
+        # Fallback: return combined text as is
+        return combined_text
 
 
 def summarize_chunk_wrapper(args):
@@ -236,9 +340,9 @@ def call_ollama_summary(text: str, percent: float, ollama_url: str, model: str =
         logging.info("Combined summary still too large, applying recursive summarization")
         return call_ollama_summary(combined_summary, percent, ollama_url, model)
     else:
-        # Final summarization of combined chunks
+        # Final summarization of combined chunks into coherent narrative
         logging.info("Applying final summarization to combined chunks")
-        return call_ollama_summary_single(combined_summary, percent, ollama_url, model)
+        return call_ollama_combine_summaries(combined_summary, percent, ollama_url, model)
 
 
 def main():
