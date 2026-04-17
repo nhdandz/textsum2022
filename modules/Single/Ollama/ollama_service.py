@@ -11,6 +11,20 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 logging.basicConfig(level=logging.INFO)
 
+def send_partial_result(url_status, sum_id, user_id, partial_text, chunk_info=""):
+    """Send partial summarization result to backend for streaming display"""
+    try:
+        # url_status = ".../api/multisum/status", partial route is ".../api/multisum/partial"
+        base_url = url_status.rsplit('/status', 1)[0]
+        requests.post(f"{base_url}/partial", json={
+            "inMultiDocSumId": sum_id,
+            "userId": user_id,
+            "partialText": partial_text,
+            "chunkInfo": chunk_info
+        }, timeout=5)
+    except Exception:
+        pass
+
 # Token estimation constants
 CHARS_PER_TOKEN_VI = 4  # Vietnamese text: ~4 chars per token
 MAX_TOKENS = 15000  # Safety margin for 33k context window (conservative for better quality)
@@ -144,6 +158,7 @@ def call_ollama_summary_single(text: str, percent: float, ollama_url: str, model
                 "model": model,
                 "prompt": f"Hãy đọc và hiểu văn bản sau, sau đó viết lại thành bản tóm tắt tóm lược (abstractive summary) bằng tiếng Việt với khoảng {num_sentences} câu. DIỄN GIẢI LẠI nội dung bằng cách hiểu của bạn, đừng chỉ sao chép câu gốc. Trả về nội dung súc tích, rõ ràng, không thêm XML, tag hay giải thích:\n\n{text}",
                 "stream": False,
+                "think": False,
                 "options": {
                     "temperature": 0.3,
                     "top_p": 0.9
@@ -185,84 +200,6 @@ def call_ollama_summary_single(text: str, percent: float, ollama_url: str, model
             return text[:len(text)//3]
 
 
-def call_ollama_combine_summaries(combined_text: str, percent: float, ollama_url: str, model: str = "mistral") -> str:
-    """
-    Call Ollama API to combine multiple chunk summaries into a coherent narrative text
-    This function creates a flowing document instead of bullet points
-    """
-    try:
-        # Calculate number of sentences for final summary
-        import nltk
-        try:
-            nltk.data.find('tokenizers/punkt')
-        except LookupError:
-            nltk.download('punkt', quiet=True)
-
-        sentences = nltk.sent_tokenize(combined_text)
-        # For combining phase, reduce output more aggressively to avoid long processing time
-        if len(sentences) > 50:
-            # For long combined texts, reduce more aggressively
-            target_ratio = percent * 0.8  # Reduce by half
-            num_sentences = max(10, int(len(sentences) * target_ratio))
-        else:
-            num_sentences = max(2, int(len(sentences) * percent))
-
-        logging.info(f"Combining {len(sentences)} sentences from chunks into {num_sentences} sentences")
-
-        # Call Ollama API with special prompt for combining summaries
-        response = requests.post(
-            f"{ollama_url}/api/generate",
-            json={
-                "model": model,
-                "prompt": f"""{combined_text}
-                Hãy đọc kỹ và hiểu các phần nội dung ở trên, sau đó viết lại thành một bản tóm tắt tóm lược (abstractive summary) bằng tiếng Việt, với khoảng {num_sentences} câu.
-
-YÊU CẦU QUAN TRỌNG:
-- DIỄN GIẢI LẠI nội dung bằng cách hiểu của bạn, KHÔNG chỉ sao chép câu gốc
-- Viết dưới dạng các đoạn văn (paragraphs) liền mạch, tự nhiên
-- KHÔNG sử dụng số thứ tự (1., 2., 3.), đầu mục, hay gạch đầu dòng
-- Sử dụng các từ nối để kết nối ý giữa các phần (ví dụ: "Bên cạnh đó", "Ngoài ra", "Đồng thời", v.v.)
-- Giữ đúng thứ tự logic và nội dung của văn bản gốc
-- Diễn đạt ngắn gọn, súc tích nhưng đầy đủ ý nghĩa
-- Chỉ trả về nội dung tóm tắt, không thêm XML, tag hay giải thích
- 
-{combined_text}""",
-                "stream": False,
-                "options": {
-                    "temperature": 0.3,
-                    "top_p": 0.9
-                }
-            },
-            timeout=900  # Increased to 15 minutes for large combined summaries
-        )
-
-        if response.status_code == 200:
-            result = response.json()
-            summary = result.get("response", "").strip()
-
-            # Remove any XML-like tags from the response
-            import re
-            summary = re.sub(r'<think>.*?</think>', '', summary, flags=re.DOTALL)
-            summary = re.sub(r'<[^>]+>', '', summary)
-            summary = summary.strip()
-
-            # Normalize excessive whitespace (fix multiple newlines)
-            summary = normalize_whitespace(summary)
-
-            logging.info(f"Combined summarization successful, length: {len(summary)}")
-            return summary
-        else:
-            logging.error(f"Ollama API error: {response.status_code} - {response.text}")
-            # Fallback: return combined text as is
-            return combined_text
-
-    except Exception as e:
-        logging.error(f"Ollama combine summaries failed: {e}")
-        traceback.print_exc()
-        # Fallback: return combined text as is
-        return combined_text
-
-
 def summarize_chunk_wrapper(args):
     """Wrapper function for parallel chunk summarization"""
     chunk_idx, chunk, percent, ollama_url, model = args
@@ -289,10 +226,11 @@ def summarize_chunk_wrapper(args):
             return (chunk_idx, chunk[:1000], str(fallback_error))
 
 
-def call_ollama_summary(text: str, percent: float, ollama_url: str, model: str = "mistral") -> str:
+def call_ollama_summary(text: str, percent: float, ollama_url: str, model: str = "mistral",
+                         sum_id=None, user_id=None, url_status=None) -> str:
     """
-    Call Ollama API for text summarization with hierarchical chunking and parallel processing
-    Automatically handles large texts by splitting into chunks and processing them in parallel
+    Call Ollama API for text summarization with hierarchical chunking and parallel processing.
+    Sends partial results after each chunk completes for streaming UX.
     """
     estimated_tokens = estimate_token_count(text)
     logging.info(f"Text estimated at ~{estimated_tokens} tokens ({len(text)} chars)")
@@ -308,28 +246,32 @@ def call_ollama_summary(text: str, percent: float, ollama_url: str, model: str =
     logging.info(f"Split text into {len(chunks)} chunks, processing with {MAX_WORKERS} workers")
 
     # Step 1: Summarize each chunk in parallel
-    chunk_summaries = [None] * len(chunks)  # Pre-allocate to maintain order
+    chunk_summaries = [None] * len(chunks)
 
-    # Prepare arguments for parallel processing
     chunk_args = [
         (i + 1, chunk, percent, ollama_url, model)
         for i, chunk in enumerate(chunks)
     ]
 
-    # Use ThreadPoolExecutor for parallel processing
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        # Submit all tasks
         future_to_idx = {
             executor.submit(summarize_chunk_wrapper, args): args[0]
             for args in chunk_args
         }
 
-        # Collect results as they complete
+        # Collect results as they complete and send partial updates
+        completed = 0
         for future in as_completed(future_to_idx):
             chunk_idx, summary, error = future.result()
             chunk_summaries[chunk_idx - 1] = summary
+            completed += 1
             if error:
                 logging.warning(f"Chunk {chunk_idx} had error: {error}")
+            # Send partial result after each chunk completes
+            if sum_id and url_status:
+                partial_so_far = "\n\n".join(s for s in chunk_summaries if s)
+                send_partial_result(url_status, sum_id, user_id, partial_so_far,
+                                    f"Đã xử lý {completed}/{len(chunks)} đoạn")
 
     # Step 2: Combine chunk summaries
     combined_summary = "\n\n".join(chunk_summaries)
@@ -338,11 +280,12 @@ def call_ollama_summary(text: str, percent: float, ollama_url: str, model: str =
     # Step 3: If combined summary is still too large, recursively summarize
     if estimate_token_count(combined_summary) > MAX_TOKENS:
         logging.info("Combined summary still too large, applying recursive summarization")
-        return call_ollama_summary(combined_summary, percent, ollama_url, model)
+        return call_ollama_summary(combined_summary, percent, ollama_url, model,
+                                   sum_id=sum_id, user_id=user_id, url_status=url_status)
     else:
-        # Final summarization of combined chunks into coherent narrative
+        # Final summarization of combined chunks
         logging.info("Applying final summarization to combined chunks")
-        return call_ollama_combine_summaries(combined_summary, percent, ollama_url, model)
+        return call_ollama_summary_single(combined_summary, percent, ollama_url, model)
 
 
 def main():
@@ -453,7 +396,10 @@ def main():
                         top["raw_text"],
                         per,
                         ollama_url,
-                        ollama_model
+                        ollama_model,
+                        sum_id=sum_id,
+                        user_id=message.get("user_id"),
+                        url_status=url_status
                     )
                     obj.update({"text": summary})
                     output_format["result"]["topic"].append(obj)
@@ -474,9 +420,12 @@ def main():
                 except:
                     pass
                 traceback.print_exc()
-                consumer.subscribe([topic], listener=TestRebalanceListener(
-                    consumer, TopicPartition(topic, current_partition), current_offset
-                ))
+                # Seek past the stuck message to prevent infinite retry loop
+                try:
+                    consumer.seek(TopicPartition(topic, current_partition), current_offset + 1)
+                    logging.info(f"Seeked past stuck message at offset {current_offset} for {sum_id}")
+                except Exception as seek_err:
+                    logging.error(f"Failed to seek past stuck message: {seek_err}")
 
         except Exception as e:
             logging.error(f"Error processing message: {e}")
